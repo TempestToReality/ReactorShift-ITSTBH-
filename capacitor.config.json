@@ -1,0 +1,12 @@
+{
+ "appId": "com.angelo.reactorshift",
+ "appName": "Is this supposed to be here?",
+ "webDir": "www",
+ "bundledWebRuntime": false,
+ "server": {
+  "androidScheme": "https"
+ },
+ "android": {
+  "allowMixedContent": false
+ }
+}
