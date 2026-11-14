@@ -1,6 +1,12 @@
 name: Build Android APK
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'README.md'
+permissions:
+  contents: write
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -32,18 +38,32 @@ jobs:
           src.resize((512,512)).save('www/icons/icon-512.png')
           src.resize((1024,1024)).save('icon-1024.png')
           PY
+      - name: Use the fixed signing key (so updates install over the old app)
+        run: |
+          mkdir -p ~/.android
+          if [ -f debug.keystore ]; then cp debug.keystore ~/.android/debug.keystore; else echo "No debug.keystore in repo; updates will need an uninstall first"; fi
       - run: npm install
       - run: npx cap add android
       - name: App icon
         run: |
           python3 - <<'PY'
           from PIL import Image
-          sizes={'mdpi':48,'hdpi':72,'xhdpi':96,'xxhdpi':144,'xxxhdpi':192}
-          im=Image.open('icon-1024.png')
-          for n,s in sizes.items():
-              r=im.resize((s,s))
-              r.save('android/app/src/main/res/mipmap-%s/ic_launcher.png'%n)
-              r.save('android/app/src/main/res/mipmap-%s/ic_launcher_round.png'%n)
+          import os
+          im=Image.open('icon-1024.png').convert('RGBA')
+          res='android/app/src/main/res/'
+          # legacy square and round icons
+          for n,s in {'mdpi':48,'hdpi':72,'xhdpi':96,'xxhdpi':144,'xxxhdpi':192}.items():
+              r=im.resize((s,s),Image.NEAREST)
+              r.save(res+'mipmap-%s/ic_launcher.png'%n)
+              r.save(res+'mipmap-%s/ic_launcher_round.png'%n)
+          # adaptive icon (Android 8+): foreground sits in the safe zone on a dark background
+          for n,s in {'mdpi':108,'hdpi':162,'xhdpi':216,'xxhdpi':324,'xxxhdpi':432}.items():
+              canvas=Image.new('RGBA',(s,s),(0,0,0,0))
+              inner=int(s*0.64)
+              canvas.paste(im.resize((inner,inner),Image.NEAREST),((s-inner)//2,(s-inner)//2))
+              canvas.save(res+'mipmap-%s/ic_launcher_foreground.png'%n)
+          open(res+'values/ic_launcher_background.xml','w').write('<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <color name="ic_launcher_background">#10181A</color>\n</resources>\n')
+          print(sorted(os.listdir(res)))
           PY
       - run: npx cap sync android
       - name: Build debug APK
@@ -53,4 +73,13 @@ jobs:
         with:
           name: reactor-shift-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
-          
+      - name: Publish a downloadable release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp android/app/build/outputs/apk/debug/app-debug.apk ReactorShift.apk
+          gh release create "build-${{ github.run_number }}" ReactorShift.apk \
+            --title "Reactor Shift build ${{ github.run_number }}" \
+            --notes "Android APK. Download ReactorShift.apk below and open it on your phone. See the README for install help and the Play Protect warning." \
+            --latest
+            
