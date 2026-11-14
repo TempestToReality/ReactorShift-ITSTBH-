@@ -13,20 +13,38 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-      - name: Prepare web folder
+      - name: Prepare web folder and icons
         run: |
+          ls -la
           mkdir -p www/icons
           cp index.html manifest.webmanifest sw.js www/
-          cp icon-192.png icon-512.png www/icons/
+          pip install pillow
+          python3 - <<'PY'
+          import os
+          from PIL import Image
+          src=None
+          for n in ('icon-1024.png','icon-512.png','icon-192.png'):
+              if os.path.exists(n):
+                  src=Image.open(n).convert('RGB'); break
+          if src is None:
+              src=Image.new('RGB',(512,512),(16,24,26))
+          src.resize((192,192)).save('www/icons/icon-192.png')
+          src.resize((512,512)).save('www/icons/icon-512.png')
+          src.resize((1024,1024)).save('icon-1024.png')
+          PY
       - run: npm install
       - run: npx cap add android
       - name: App icon
         run: |
-          pip install pillow || true
-          for d in mdpi:48 hdpi:72 xhdpi:96 xxhdpi:144 xxxhdpi:192; do
-            n=${d%%:*}; s=${d##*:}
-            python3 -c "from PIL import Image;im=Image.open('icon-1024.png').resize(($s,$s));im.save('android/app/src/main/res/mipmap-$n/ic_launcher.png');im.save('android/app/src/main/res/mipmap-$n/ic_launcher_round.png')" || true
-          done
+          python3 - <<'PY'
+          from PIL import Image
+          sizes={'mdpi':48,'hdpi':72,'xhdpi':96,'xxhdpi':144,'xxxhdpi':192}
+          im=Image.open('icon-1024.png')
+          for n,s in sizes.items():
+              r=im.resize((s,s))
+              r.save('android/app/src/main/res/mipmap-%s/ic_launcher.png'%n)
+              r.save('android/app/src/main/res/mipmap-%s/ic_launcher_round.png'%n)
+          PY
       - run: npx cap sync android
       - name: Build debug APK
         working-directory: android
