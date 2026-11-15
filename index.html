@@ -124,6 +124,26 @@ canvas{image-rendering:pixelated;image-rendering:crisp-edges;display:block;touch
 #shop .btn.big{background:rgb(var(--sc))}
 .topbar{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .topbar .btn{width:auto!important;text-align:center}
+.vlink{background:none;border:0;border-bottom:1px solid var(--dim);color:var(--dim);font:9px var(--display);letter-spacing:.08em;text-transform:uppercase;padding:0 0 1px;margin-left:8px;cursor:pointer}
+.vlink:active{color:var(--amber);border-color:var(--amber)}
+#chg.top{position:fixed;z-index:90}
+.cg{border:2px solid var(--line);background:var(--panel2);padding:8px 10px;flex:none}.cg h3{margin:0 0 4px;font:11px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--amber)}.cg ul{margin:0;padding-left:18px;font-size:16px;line-height:1.3}.cg li{margin:3px 0}
+
+.hcard{height:100%;max-width:380px;overflow:hidden;gap:8px}
+#hq{width:100%;box-sizing:border-box;background:#0b0f11;color:var(--fg);border:2px solid var(--line);padding:10px;font:18px var(--mono);outline:0}
+#hq:focus{border-color:var(--amber)}
+.hchips{display:flex;flex-wrap:wrap;gap:5px}
+.hchip{font:10px var(--display);letter-spacing:.06em;text-transform:uppercase;padding:7px 8px;background:var(--panel2);border:2px solid var(--line);color:var(--fg);cursor:pointer}
+.hchip.on{background:var(--amber);color:#111;border-color:var(--amber)}
+.hchip.p{border-color:var(--alarm);color:#ff9a8a}.hchip.p:active{background:var(--alarm);color:#fff}
+#hlist{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:6px}
+.hc{border:2px solid var(--line);background:var(--panel2);flex:none}.hc.open{border-color:var(--amber)}.hc.pn{border-left:5px solid var(--alarm)}
+.ht{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;background:none;border:0;color:var(--fg);padding:10px;font:18px/1.15 var(--mono);text-align:left;cursor:pointer}
+.ht b{color:var(--amber);font-weight:normal}
+.hb{padding:0 10px 8px;font-size:16px;line-height:1.3}.hb ol,.hb ul{margin:4px 0;padding-left:20px}.hb li{margin:4px 0}.hb b{color:var(--amber);font-weight:normal}
+.hg{display:flex;flex-wrap:wrap;gap:4px;padding:0 10px 8px}.hg i{font:normal 9px var(--display);color:var(--dim);border:1px solid var(--line);padding:3px 5px;cursor:pointer}
+#help.top{position:fixed;z-index:90}
+
 .btn.go{background:#ffb020;color:#111;border-color:#ffd468;text-align:center!important;font-size:14px;padding:14px 8px}
 .pmgrid .btn{text-align:center!important}
 .btn.danger{border-color:#7a2a24;color:#ff8a7e;text-align:center!important}
@@ -186,7 +206,7 @@ input[type=text]{font-family:var(--mono);font-size:22px;background:#0a0d10;color
       <button class="btn go" data-go="resume" type="button">&#9654; Resume</button>
       <div class="grid2 pmgrid">
         <button class="btn" data-go="settings" type="button">Settings</button>
-        <button class="btn" data-go="con" type="button">Contracts</button>
+        <button class="btn" data-go="help" type="button">Help</button>
         <button class="btn" data-go="ward" type="button">Wardrobe</button>
         <button class="btn" data-go="ach" type="button">Achievements</button>
         <button class="btn" data-go="xfer" type="button">Backup saves</button>
@@ -196,15 +216,14 @@ input[type=text]{font-family:var(--mono);font-size:22px;background:#0a0d10;color
       </div>
       <button class="btn danger" data-go="mainmenu" type="button">Main menu</button>
       <div class="lab kb">A/D or arrows move &middot; W/Space jump &middot; Shift sprint &middot; 1-7 items &middot; Esc pause &middot; F fullscreen</div>
-      <div id="ver">IS THIS SUPPOSED TO BE HERE? v0.2</div>
+      <div id="ver">IS THIS SUPPOSED TO BE HERE? v0.2<button class="vlink" data-go="chg" type="button">Changelog</button></div>
     </div>
   </div>
 
   <div id="con" class="overlay" hidden>
     <div class="card">
-      <h2>Contracts</h2>
+      <div class="topbar"><h2>Contracts</h2><button class="btn" data-go="resume" type="button">Close</button></div>
       <div id="conBody" style="max-height:60vh;overflow-y:auto;display:flex;flex-direction:column;gap:6px"></div>
-      <button class="btn" data-go="back" type="button">Back</button>
     </div>
   </div>
 
@@ -238,6 +257,24 @@ input[type=text]{font-family:var(--mono);font-size:22px;background:#0a0d10;color
     </div>
   </div>
 
+  <div id="help" class="overlay" hidden>
+    <div class="card hcard">
+      <div class="topbar"><h2>Help</h2><button class="btn" data-go="hback" type="button">Back</button></div>
+      <input id="hq" type="search" placeholder="Search: rods, meltdown, money..." autocomplete="off" spellcheck="false" aria-label="Search help">
+      <div class="lab">Panic?</div><div id="hpn" class="hchips"></div>
+      <div id="hcats" class="hchips"></div>
+      <div id="hres" class="lab"></div>
+      <div id="hlist"></div>
+    </div>
+  </div>
+
+  <div id="chg" class="overlay" hidden>
+    <div class="card hcard">
+      <div class="topbar"><h2>Changelog</h2><button class="btn" data-go="cback" type="button">Back</button></div>
+      <div id="chgList" style="flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:6px"></div>
+    </div>
+  </div>
+
   <div id="settings" class="overlay" hidden>
     <div class="card">
       <h2>Settings</h2>
@@ -246,7 +283,7 @@ input[type=text]{font-family:var(--mono);font-size:22px;background:#0a0d10;color
         <label for="vMus">Music <span id="vMusN">100</span>%</label><input type="range" id="vMus" min="0" max="100" step="5" style="width:100%;accent-color:var(--amber)">
         <label for="vSfx">Effects and hum <span id="vSfxN">100</span>%</label><input type="range" id="vSfx" min="0" max="100" step="5" style="width:100%;accent-color:var(--amber)">
       </div>
-      <p>Use the arrows to walk. Tap a rod with a spare selected to swap it. Jump over crates, or use Unstuck in the menu. Tap an item on the floor to pick it up, or hold it to carry it. Buy supplies from the wall screens: tools and rods in the control room, drinks and medicine in the break room.</p>
+      <button class="btn go" data-go="help" type="button">Help: how do I play?</button>
       <div id="verS" class="lab" style="text-align:center;padding:10px 0">v0.2</div>
       <button class="btn" data-go="back" type="button">Back</button>
     </div>
@@ -737,7 +774,142 @@ function renderAch(lid,cid){
     h+='<div style="border:2px solid '+(got?'#3ddc84':'#3b444c')+';padding:6px 8px;background:'+(got?'#16261d':'#161c20')+'"><div style="font-family:var(--display);font-size:10px;color:'+(got?'#7fe0a4':'#8b979e')+'">'+(got?'\u2713 ':'\u25A1 ')+a.n+'</div><div style="font-size:15px;color:var(--fg)">'+a.d+'</div></div>';}
   $(lid).innerHTML=h;$(cid).textContent=n+' / '+ACHS.length;
 }
-var OVS=['menu','con','xfer','ward','achv','settings','numpad','adminLogin','dbug','gameover'];
+/* ---------- help ---------- */
+var HCATS=[['all','All'],['start','Start'],['rods','Rods'],['reactor','Reactor'],['coolant','Coolant'],['crew','Crew'],['items','Items'],['rooms','Rooms'],['panic','Panic'],['extras','Extras']];
+var HPAN=[['MELTDOWN','melt'],['TOO HOT','hot'],['FLOOD','flood'],['LEAK','leak'],['RADIATION','rad'],['LOW HP','hp'],['BROKEN ROD','broke'],['STUCK','stuck']];
+var HELP=[
+['what','start','What do I do in this game?','goal objective purpose how to play begin start basics explain confused lost',
+ 'You run a nuclear reactor, one shift at a time.<ol><li><b>Fill the core.</b> Fuel rods go in the light cells, control rods in the dark cells.</li><li><b>Keep it cool.</b> In the control room, use the slider to keep the temperature between 350 and 550&deg;C.</li><li><b>Get paid.</b> Power sells by itself. Cash comes in.</li><li><b>Spend it.</b> Better rods, disks, crew, shelves.</li><li><b>Do not melt down.</b> Over 600&deg;C is a warning. 850&deg;C is the end.</li></ol>Stuck on a step? Search the step name here.',1],
+['first','start','First 5 minutes checklist','first new beginner tutorial walkthrough step by step setup',
+ '<ol><li>Look at the reactor. Any empty cells? Tap a rod in your bag, then tap the empty cell.</li><li>Climb the stairs to the <b>control room</b>. Set the slider to about 50%.</li><li>Watch the temperature on the top bar. Aim for 350-550&deg;C.</li><li>Check the <b>coolant room</b> (left door): pump on, no leaks.</li><li>Visit the <b>break room</b> (right door) to hire crew when you have cash.</li></ol>',1],
+['ctl','start','Controls','controls move walk jump sprint keyboard touch buttons arrows keys run tap hold carry',
+ '<b>Touch:</b> arrow buttons walk, Jump jumps, tap things to use them. Tap an item in your bag to select it. Hold an item on the floor to carry it. Double-tap an arrow to sprint.<br><b>Keyboard:</b> A/D or arrows move, W or Space jump, Shift sprint, 1-7 pick items, Esc pause, F fullscreen.<br>"Walk closer" means you are too far away.'],
+['map','rooms','Where is everything?','map rooms where location find reactor control coolant break storage stairs door',
+ '<ul><li><b>Reactor room:</b> the core, the CART button, the chute, the stairs.</li><li><b>Control room:</b> climb the stairs, walk through the door at the top.</li><li><b>Coolant room:</b> door on the left. Disposal bay is past it behind the watertight door.</li><li><b>Break room:</b> door on the right.</li><li><b>Storage room:</b> under the stairs. Needs the Handyman first.</li></ul>'],
+['rodswap','rods','How do I remove and replace rods?','remove replace swap pull install insert change take out put in rod core cell slot spent broken',
+ '<ul><li><b>Install:</b> tap a rod in your bag, then tap an empty cell in the core.</li><li><b>Replace:</b> select a fresh rod, then tap the old rod in the core. They swap.</li><li><b>Remove only:</b> with nothing selected, tap a rod in the core. You pull it out.</li></ul>Spent or broken rods go to the disposal bay. Do not carry spent fuel around: it slowly poisons you. If it says <b>Hands off</b>, wait until the rod stops moving.',1],
+['rodtype','rods','Fuel rods vs control rods','fuel control white black light dark cells wrong hole which rod difference',
+ '<b>Fuel rods</b> make power and heat. They go in the light cells. The bars show how much fuel is left.<br><b>Control rods</b> soak up neutrons to slow the reaction. They go in the dark cells.<br>You can force the wrong rod into a cell. It is a bad idea, and there is an achievement for it.'],
+['wear','rods','When do rods wear out or break?','wear out break broken weak degrade spent fuel wrench patch spare mechanic hardened slow burn',
+ '<ul><li>Fuel rods burn down over time. Spent ones need replacing.</li><li>Control rods can go weak or break. Swap in a spare, or use the <b>wrench</b>: it patches a broken control rod to half strength and is never used up.</li><li>Control Rod Mechanics (crew) patch and replace them for you.</li><li>Disks: HARDENED RODS breaks 60% less, SLOW BURN wears fuel 35% slower.</li></ul>'],
+['tiers','rods','Rod tiers: Starter to Apex','tier upgrade starter reliable refined elite apex better rods upgrader charge',
+ 'Rods come in five tiers: <b>Starter, Reliable, Refined, Elite, Apex</b>. Higher tiers pay more and run hotter, so keep the coolant happy. Hire Rod Upgraders at the break room clock: they pull weak rods, charge them, and fire them back one tier better.'],
+['buyrods','rods','Where do I get more rods?','buy rods supply pc fuel control shop cost price order',
+ 'Use the <b>RODS</b> monitor (Supply PC) in the control room. It sells fuel rods, control rods, a flashlight, a wrench and the plush. Orders arrive in a box: tap it to open. The WHOLESALE disk makes rods 20% cheaper.'],
+['cart','rods','Wheelbarrow, shelves and storage','cart wheelbarrow shelf shelves storage rack handyman store rods haul drag debris door buy',
+ '<ul><li>Tap <b>CART</b> on the reactor room wall: the wheelbarrow rolls to you. Tap it to drag it.</li><li>It carries up to 6 rods.</li><li>Storage is under the stairs. The door is jammed: hire the <b>Handyman</b>. He clears debris, fixes the door, builds the first shelf.</li><li>Extra shelves ($2500, then $5000, +8 slots each): tap an empty shelf spot in the storage room twice.</li></ul>'],
+['slider','reactor','The slider (control rods in)','slider control rods in insertion power lower raise hotter cooler out in percent',
+ 'The slider lives in the control room. <b>More in</b> = cooler and weaker. <b>More out</b> = hotter and stronger. Small moves work best, then wait and watch the temperature.'],
+['btn','reactor','Why is there a button in the control room?','button red az-5 az5 scram big red cover lift clipboard phone monitors auto-rod console',
+ 'Things you can use in the control room:<ul><li><b>AZ-5 (big red button):</b> tap to lift the cover, tap again to slam all control rods in. Also turns AUTO-ROD off. Emergency use.</li><li><b>AUTO-ROD button:</b> next to the slider. Needs the AUTO-ROD disk.</li><li><b>SELL / RODS / DISKS monitors:</b> sell power, buy rods, buy disks.</li><li><b>Clipboard:</b> contracts and daily goals.</li><li><b>Phone:</b> switch the coolant tech between waiting for orders and following AUTO-ROD+.</li></ul>',1],
+['auto','reactor','AUTO-ROD and AUTO-SCRAM','auto rod autorod scram automatic hands off disk hold temperature',
+ 'Disks are bought at the DISKS monitor. <b>AUTO-ROD</b> moves the rods itself to hold about 480&deg;C. <b>AUTO-ROD+</b> is faster and holds about 420&deg;C. <b>AUTO-SCRAM</b> slams the rods in if the core passes 720&deg;C (60s cooldown). Press AZ-5 and AUTO-ROD switches off.'],
+['temp','reactor','Temperature guide','temperature heat hot cold degrees celsius warning red limit safe band 600 850 limit',
+ '<ul><li>Under 350&deg;C: safe but low pay.</li><li><b>350-550&deg;C: the sweet spot.</b></li><li>600&deg;C: warning lights and siren.</li><li>700&deg;C+: radiation starts leaking into the plant.</li><li>850&deg;C: meltdown.</li></ul>'],
+['money','reactor','How do I make money?','money cash earn income sell power market price rich poor broke',
+ 'Power sells automatically. Hotter and higher-tier rods pay more. Extra income: <b>contracts</b>, <b>daily goals</b> (all done = +$500), and the stick figure on the wall. The SELL monitor lets you hand-sell stored power when the market is high (turn auto-sell off first).'],
+['con','reactor','Contracts and daily goals','contracts contract clipboard goals daily reward task mission quest',
+ 'Tap the <b>clipboard in the control room</b>. Take one contract at a time: make power, earn cash, stay calm, hold the temperature band, install rods, survive pipe bursts. Easy, Medium and Hard pay more. Daily goals reset each day.'],
+['cool','coolant','Coolant room basics','coolant pump valve drain pressure flow water cool cooling room tank',
+ 'Tap the <b>valve</b> to change coolant flow and the <b>pump lever</b> to switch the pump. <b>Drains</b> empty water from the floor. Keep the pressure gauge out of the red: above about 95% a pipe can burst. The COOLANT+ disk makes coolant work 20% better.'],
+['leak','panic','A pipe burst! How do I fix a leak?','pipe burst leak fix wrench patch water flood coolant repair tape',
+ '<ol><li>Go to the coolant room (left door).</li><li>Select the <b>wrench</b> in your tool slot.</li><li>Tap the pipe.</li><li>Open the drains to clear the water.</li></ol>The Coolant Tech (Evan) will do it for you if hired. A leak left alone floods the room fast.',1],
+['flood','panic','The coolant room is flooded','flood flooded water locked door watertight drain stuck cannot enter alarm',
+ 'When the water gets high the <b>watertight door seals itself</b>. You cannot open it while it is flooded. Patch the leak, open the drains, wait for the water to go, then tap the door to open it. The disposal bay is behind it.'],
+['dispose','coolant','Disposal bay and the chute','disposal bay chute trash spent rods bin throw away get rid poison radioactive',
+ 'Spent fuel and broken control rods go in the <b>disposal bay</b>: select the rod and tap the bin. It is past the coolant room, behind the watertight door. Rod Upgraders drop spent rods down the <b>chute</b> in the reactor room.'],
+['melt','panic','MELTDOWN! What do I do?','meltdown melt emergency panic help core exploding alarm siren too hot dying scram',
+ '<ol><li><b>Run to the control room.</b></li><li>Tap the <b>AZ-5</b> cover, then tap again: all control rods go in.</li><li>Slide the slider fully in.</li><li>Check the coolant room: pump on, leak patched.</li><li>If you got irradiated: break room showers or an anti-rad shot.</li><li>Only raise the slider again once the core is below 350&deg;C.</li></ol>At 850&deg;C the core is gone and the run ends. You can rebuild from the game over screen.',1],
+['hot','panic','The core is too hot','hot overheating temperature rising red warning cool down lower',
+ '<ol><li>Push the slider in.</li><li>Press <b>AZ-5</b> if it keeps climbing.</li><li>Check the coolant room for leaks and the pump.</li><li>Swap out spent fuel rods.</li></ol>Buy the <b>AUTO-SCRAM</b> or <b>AUTO-ROD</b> disk so it never surprises you again.'],
+['rad','panic','I am irradiated','radiation irradiated rad poison geiger sick shower anti-rad shot janitor dina',
+ 'Radiation comes from spent fuel in your bag, a core over 700&deg;C and radiation bursts. Fixes: <b>emergency showers</b> (break room, hold still), <b>anti-rad shots</b> at the Medical screen, or hire <b>Dina M.</b> the Janitor to scrub it off slowly. Drop spent fuel in the disposal bay.'],
+['hp','panic','My health is low','health hp low dying hurt medkit bandage heal medic collapsed faint money',
+ 'Bandage +20 HP, Medkit +60 HP, Caffeine-free GOOD heals fully. <b>Sol R.</b> the Medic heals you whenever you drop under 70 HP. If you collapse, the medics take $100.'],
+['broke','panic','A control rod broke','control rod broke broken weak cracked failed spare wrench mechanic',
+ 'Swap in a spare control rod, or use the <b>wrench</b> to patch it to half strength. Hire Control Rod Mechanics (Altair A., Nova T.) to patch weak rods and replace broken ones for $120 each.'],
+['stuck','panic','I am stuck','stuck cant move trapped crate jump unstuck glitch softlock',
+ 'Hit <b>Jump</b> (or W/Space). If that fails: Pause menu, then <b>Unstuck</b>. It puts you back at the start.'],
+['crew','crew','Crew: who does what','crew staff workers employees hire clock in evan dina sol tomas wren jaeron altair nova hal coolant janitor medic upgrader mechanic handyman',
+ 'Hire at the <b>check-in clock</b> in the break room.<ul><li><b>Evan H.</b> Coolant Tech, $4000: patches leaks, runs the drains.</li><li><b>Dina M.</b> Janitor, $3000: scrubs radiation off you.</li><li><b>Sol R.</b> Medic, $5000: heals you under 70 HP.</li><li><b>Tomas B.</b> Rod Upgrader I, $2500: upgrades rods up to Refined.</li><li><b>Wren P.</b> Rod Upgrader II, $6000: up to Elite.</li><li><b>Jaeron G.</b> Rod Upgrader III, $12000: up to Apex.</li><li><b>Altair A.</b> Control Rod Mechanic I, $3500: patches and replaces control rods.</li><li><b>Nova T.</b> Control Rod Mechanic II, $7000: same, faster.</li><li><b>Hal D.</b> Handyman, $1500: fixes storage and builds shelves.</li></ul>'],
+['evan','crew','Talking to the coolant tech (Evan)','evan tech phone talk manual follow auto-rod+ orders toggle hello',
+ 'Tap Evan, or use the <b>phone in the control room</b>, to toggle him between <b>manual</b> (waits for your orders) and <b>following AUTO-ROD+</b>.'],
+['items','items','Items guide: cans, meds, tools','items can good drink knockoff bandage medkit anti-rad flashlight wrench box plush stamina energy cost price',
+ '<ul><li><b>GOOD</b> $100: infinite stamina 120s. Double-tap an arrow to sprint.</li><li><b>Caffeine-free GOOD</b> $60: heals you fully.</li><li><b>Knockoff</b> $40: lose half your health, 90s of energy, then 30s of slowness.</li><li><b>Bandage</b> $25 +20 HP. <b>Medkit</b> $130 +60 HP.</li><li><b>Anti-rad</b> $80 flush. <b>Strong</b> $220: clear + 45s shield. <b>MAX</b> $480: clear + 2 min shield + 20 HP.</li><li><b>Flashlight:</b> tap to toggle. <b>Wrench:</b> patches pipes and rods.</li></ul>Drinks and Medical screens are in the break room.'],
+['bag','items','Bag, hands and carrying','bag inventory slots full hands carry drop stack tool slot space stow',
+ 'Tap an item to select it. <b>Hold</b> an item on the floor to carry it. Tools (wrench, flashlight) have their own slots. If it says <b>Bag full</b> or <b>Hands full</b>, drop or stow something. Most non-tool items stack.'],
+['shops','rooms','Where do I buy things?','shop buy store terminal screen monitor vending where purchase supply pc disk pc sell pc drinks medical',
+ '<ul><li><b>Control room:</b> SELL (power), RODS (rods, tools), DISKS (upgrades).</li><li><b>Break room:</b> Drinks screen, Medical screen, and the check-in clock for crew.</li><li><b>Pause menu:</b> Wardrobe for cosmetics.</li></ul>Stand close to a screen and tap it.'],
+['disks','reactor','Disks (permanent upgrades)','disks disk upgrade cheaper broker investor wholesale lowballing scram slow burn coolant hardened',
+ '<ul><li>AUTO-SCRAM $2500, SLOW BURN $2000, COOLANT+ $3000</li><li>AUTO-ROD $4000, AUTO-ROD+ $9000, HARDENED RODS $3500</li><li>LOWBALLING $3500 (supplies 25% off), WHOLESALE $3000 (rods 20% off)</li><li>BROKER $4000 (hand-selling +20%), INVESTOR $6000 (all income +10%)</li></ul>'],
+['save','extras','Saves, backups and new runs','save slot load new run backup export import update lose progress main menu',
+ 'The game saves by itself. Pick or make a slot from the main menu. <b>Backup saves</b> in the Pause menu exports all your saves as text: copy it somewhere safe before updating. To restore, paste it and press Import. <b>New run</b> wipes the current run.'],
+['cham','extras','The stick figure on the wall','stick figure chameleon wall that aint me secret anomaly painted find hidden smii7y reward',
+ 'Sometimes a faint stick figure is painted on a wall. Find it and tap it: <b>$500 the first time, $250 after</b>. Then it hides somewhere else.'],
+['plush','extras','The Smii7y plush','smii7y plush hug sanity supply pc expensive quote 15000',
+ '$15,000 at the RODS monitor. Select it and tap yourself for a hug. It comments on your meltdowns.'],
+['ward','extras','Wardrobe and achievements','wardrobe clothes outfit skin cosmetic fashion achievements trophies',
+ 'Both are in the Pause menu. Buy outfits in the Wardrobe. Achievements show what you have left to find.'],
+['menu','extras','What do the menu buttons do?','menu pause settings unstuck new run main menu debug button resume',
+ '<b>Unstuck</b> puts you back at the start. <b>New run</b> wipes the current run. <b>Main menu</b> saves and leaves. <b>Help</b> is this page.']
+];
+HELP.forEach(function(h){h.hay=(h[2]+' '+h[3]+' '+h[1]+' '+h[4].replace(/<[^>]*>/g,' ')).toLowerCase();});
+var HQ='',HC='all',HO='',HFROM='menu';
+function hStem(t){return t.length>4?t.replace(/(ing|es|s)$/,''):t;}
+function hRender(){
+  var terms=HQ.toLowerCase().split(/\s+/).filter(Boolean).map(hStem),res=[];
+  HELP.forEach(function(h,i){
+    if(HC!=='all'&&h[1]!==HC)return;
+    var sc=0,ok=true;
+    terms.forEach(function(t){
+      if(h[2].toLowerCase().indexOf(t)>=0)sc+=5;else if(h[3].indexOf(t)>=0)sc+=3;else if(h.hay.indexOf(t)>=0)sc+=1;else ok=false;
+    });
+    if(ok)res.push([h[5]&&!terms.length&&HC==='all'?100:sc,i]);
+  });
+  res.sort(function(a,b){return b[0]-a[0]||a[1]-b[1];});
+  if(res.length===1&&!HO)HO=HELP[res[0][1]][0];
+  var h='';
+  res.forEach(function(r){
+    var e=HELP[r[1]],open=HO===e[0],tg=e[3].split(' ').slice(0,open?12:3);
+    h+='<div class="hc'+(e[1]==='panic'?' pn':'')+(open?' open':'')+'" id="h-'+e[0]+'"><button class="ht" data-ht="'+e[0]+'" type="button"><span>'+e[2]+'</span><b>'+(open?'-':'+')+'</b></button>'
+      +(open?'<div class="hb">'+e[4]+'</div>':'')+'<div class="hg">'+tg.map(function(t){return '<i data-hq="'+t+'">#'+t+'</i>';}).join('')+'</div></div>';
+  });
+  if(!res.length)h='<p style="padding:8px">Nothing found for "'+HQ.replace(/</g,'')+'". Try: rods, meltdown, money, coolant, crew.</p>';
+  $('hlist').innerHTML=h;
+  $('hres').textContent=res.length+' topic'+(res.length===1?'':'s');
+  $('hcats').innerHTML=HCATS.map(function(c){return '<button class="hchip'+(HC===c[0]?' on':'')+'" data-hc="'+c[0]+'" type="button">'+c[1]+'</button>';}).join('');
+}
+function openHelp(from){
+  HFROM=from;HQ='';HC='all';HO='';$('hq').value='';
+  toastEl.hidden=true;toastT=0;
+  $('hpn').innerHTML=HPAN.map(function(p){return '<button class="hchip p" data-hp="'+p[1]+'" type="button">'+p[0]+'</button>';}).join('');
+  hRender();
+  if(from==='mm'){$('help').classList.add('top');$('help').hidden=false;}else{$('help').classList.remove('top');openOv('help');}
+  $('hlist').scrollTop=0;
+}
+function hBack(){if(HFROM==='mm')$('help').hidden=true;else openOv(HFROM);}
+$('hq').addEventListener('input',function(){HQ=this.value;HO='';hRender();});
+$('help').addEventListener('click',function(e){
+  var t=e.target.closest('[data-ht],[data-hc],[data-hp],[data-hq]');if(!t)return;
+  if(t.hasAttribute('data-ht')){var id=t.getAttribute('data-ht');HO=HO===id?'':id;hRender();var el=$('h-'+id);if(el&&HO)el.scrollIntoView({block:'nearest'});}
+  else if(t.hasAttribute('data-hc')){HC=t.getAttribute('data-hc');HO='';hRender();$('hlist').scrollTop=0;}
+  else if(t.hasAttribute('data-hp')){HQ='';$('hq').value='';HC='all';HO=t.getAttribute('data-hp');hRender();var el2=$('h-'+HO);if(el2)el2.scrollIntoView({block:'start'});}
+  else{HQ=t.getAttribute('data-hq');$('hq').value=HQ;HC='all';HO='';hRender();$('hlist').scrollTop=0;}
+});
+
+var CHG=[
+['Nov 15',['New Help page with search, tags and panic buttons. Find it in the menu and Settings.','Contracts now live only on the clipboard in the control room.','Evan runs through the reactor room and throws a wrench or tape roll at burst pipes.','The old cheat menu is merged into the debug menu.','Smaller, faster code.']],
+['Nov 14',['Storage room behind the stairs with a cart bay and buyable fuel shelves.','Disposal is now a sealed dark room. A watertight door shuts when the coolant room floods.','Shops moved to wall touchscreens. No more belts.','Crew have nametags and portraits.','New pause menu. Desktop and sideways phone play, with keyboard controls.','Windows version.']],
+['Earlier',['Contracts and daily goals.','Wardrobe, achievements, difficulty and hardcore mode.','Backup saves.','The Handyman and the broken storage door.','AUTO-ROD rework, music, main menu and tutorial.']]
+];
+var CFROM='menu';
+function openChg(from){
+  toastEl.hidden=true;toastT=0;CFROM=from;$('chgList').innerHTML=CHG.map(function(c){return '<div class="cg"><h3>'+c[0]+'</h3><ul>'+c[1].map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul></div>';}).join('');
+  if(from==='mm'){$('chg').classList.add('top');$('chg').hidden=false;}else{$('chg').classList.remove('top');openOv('chg');}
+}
+function cBack(){if(CFROM==='mm')$('chg').hidden=true;else openOv('menu');}
+
+var OVS=['menu','con','xfer','ward','achv','settings','help','chg','numpad','adminLogin','dbug','gameover'];
 function openOv(id){OVS.forEach(function(o){$(o).hidden=(o!==id);});$('shop').hidden=true;paused=true;HOLD=0;P.tx=null;}
 function closeOv(){OVS.forEach(function(o){$(o).hidden=true;});paused=false;}
 var npBuf='';
@@ -771,7 +943,10 @@ document.addEventListener('click',function(e){
     var g=t.getAttribute('data-go');
     if(g==='resume')closeOv();
     else if(g==='settings'){openOv('settings');}
-    else if(g==='con'){renderCon();openOv('con');}
+    else if(g==='help')openHelp($('settings').hidden?'menu':'settings');
+    else if(g==='hback')hBack();
+    else if(g==='chg')openChg('menu');
+    else if(g==='cback')cBack();
     else if(g==='xfer'){$('xferTa').value='';$('xferMsg').textContent='';openOv('xfer');}
     else if(g==='ward'){renderWard();openOv('ward');}
     else if(g==='ach'){renderAch();openOv('achv');}
@@ -3526,8 +3701,8 @@ function autosaveFlash(){
    +'<canvas id="mmcore" width="120" height="120" style="align-self:center;image-rendering:pixelated;width:150px;height:150px"></canvas>'
    +'<div class="tag">Reactor shift simulator</div><div class="tag" id="mm-snd" style="color:var(--amber);animation:mmflick 1.4s steps(2) infinite">Tap anywhere for sound</div>'
    +'<button class="btn go big" data-mm="playgo" type="button">&#9654; Play</button><button class="btn big" data-mm="continue" id="mm-cont" type="button" hidden>Continue</button>'
-   +'<div class="mgrid"><button class="btn" data-mm="tut" type="button">Tutorial</button><button class="btn" data-mm="ach" type="button">Achievements</button><button class="btn" data-mm="set" type="button">Settings</button><button class="btn" data-mm="cred" type="button">Credits</button></div>'
-   +'<a class="btn" id="mm-disc" href="https://discord.gg/gcqKTUpdKn" target="_blank" rel="noopener noreferrer">Devlogs and updates on Discord</a>'
+   +'<button class="btn go" data-mm="help" type="button" style="width:100%;margin-bottom:8px;text-align:center">Help: how do I play?</button><div class="mgrid"><button class="btn" data-mm="tut" type="button">Tutorial</button><button class="btn" data-mm="ach" type="button">Achievements</button><button class="btn" data-mm="set" type="button">Settings</button><button class="btn" data-mm="cred" type="button">Credits</button></div>'
+   +'<a class="btn" id="mm-disc" href="https://discord.gg/gcqKTUpdKn" target="_blank" rel="noopener noreferrer">Devlogs and updates on Discord</a><div style="text-align:center;padding-top:8px"><button class="vlink" data-mm="chg" type="button" style="margin:0">Changelog</button></div>'
    +'<div class="hz"></div><div class="foot"><span>v0.3</span><span>In development</span></div></div>'
    +'<div class="mmv" id="mv-ach" hidden><button class="btn" data-mm="title" type="button" style="width:auto">&lsaquo; Back</button><h2>Achievements</h2><div class="tag" id="mm-achn"></div><div id="mm-achl" style="max-height:60vh;overflow-y:auto;display:flex;flex-direction:column;gap:6px"></div></div>'
    +'<div class="mmv" id="mv-set" hidden><button class="btn" data-mm="title" type="button" style="width:auto">&lsaquo; Back</button><h2>Settings</h2>'
@@ -3634,6 +3809,8 @@ function mmSaves(){
 }
 function mmAct(a){
   if(a==='playgo'){beep(440,.05);if(hasPlayed())mmView('play');else startOffer();}
+  else if(a==='help'){beep(440,.05);openHelp('mm');}
+  else if(a==='chg'){beep(440,.05);openChg('mm');}
   else if(a==='tut'){beep(440,.05);openTut();}
   else if(a==='tutyes'){clearInterval(offerTimer);markPlayed();beep(520,.05);openTut();}
   else if(a==='tutno'){if($('mm-tno').disabled)return;markPlayed();mmView('play');}
