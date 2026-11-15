@@ -1,0 +1,99 @@
+name: Build Windows EXE
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'README.md'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Prepare desktop app
+        shell: bash
+        run: |
+          mkdir desk
+          cp index.html desk/index.html
+          if [ -f icon-512.png ]; then
+            cp icon-512.png desk/icon.png
+          elif [ -f icon-1024.png ]; then
+            python -m pip install pillow
+            python -c "from PIL import Image; Image.open('icon-1024.png').convert('RGBA').resize((512,512), Image.NEAREST).save('desk/icon.png')"
+          fi
+          cat > desk/main.js <<'EOF'
+          const { app, BrowserWindow, Menu } = require('electron');
+          const path = require('path');
+          app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
+          function createWindow() {
+            const win = new BrowserWindow({
+              width: 1280, height: 720, minWidth: 640, minHeight: 360,
+              backgroundColor: '#0b0f11', autoHideMenuBar: true,
+              icon: path.join(__dirname, 'icon.png'),
+              webPreferences: { contextIsolation: true }
+            });
+            Menu.setApplicationMenu(null);
+            win.loadFile('index.html');
+            win.webContents.on('before-input-event', (e, input) => {
+              if (input.type === 'keyDown' && input.key === 'F11') win.setFullScreen(!win.isFullScreen());
+            });
+          }
+          app.whenReady().then(createWindow);
+          app.on('window-all-closed', () => app.quit());
+          EOF
+          cat > desk/package.json <<'EOF'
+          {
+            "name": "reactor-shift",
+            "version": "1.0.0",
+            "description": "Is this supposed to be here?",
+            "author": "Angelo",
+            "main": "main.js",
+            "devDependencies": {
+              "electron": "^33.2.0",
+              "electron-builder": "^25.1.8"
+            },
+            "build": {
+              "appId": "com.angelo.reactorshift",
+              "productName": "Reactor Shift",
+              "files": ["main.js", "index.html", "icon.png"],
+              "directories": { "output": "dist" },
+              "win": { "target": "portable", "icon": "icon.png" },
+              "portable": { "artifactName": "ReactorShift.exe" }
+            }
+          }
+          EOF
+
+      - name: Install and build
+        working-directory: desk
+        shell: bash
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+        run: |
+          npm install
+          npx electron-builder --win portable --publish never
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ReactorShift-exe
+          path: desk/dist/ReactorShift.exe
+
+      - name: Publish release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "exe-${{ github.run_number }}" desk/dist/ReactorShift.exe \
+            --title "Windows build ${{ github.run_number }}" \
+            --notes "Windows EXE. Download ReactorShift.exe below and run it. Windows may show a SmartScreen warning because the app is not code-signed: click More info, then Run anyway." \
+            --latest=false
+            
