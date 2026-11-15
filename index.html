@@ -1615,6 +1615,12 @@ function fxStep(dt){
     }
   }
 }
+function drawTechRun(){
+  var r=TC.st==='run',b=TC.st==='back';
+  if(S.staff.tech!=='in'||ROOM!=='main'||!(r||b))return;
+  var k=r?1-TC.t/6:TC.t/6,x=Math.round(344-306*Math.max(0,Math.min(1,k))-cam);
+  drawChar(x,FLOOR,r?-1:1,PALS.tech,true,false,Math.sin(S.time*28));ntag(x,FLOOR-27,'tech');
+}
 function drawFixer(){
   if(S.staff.fixer!=='in'||ROOM!=='main'||FX.st==='gone'||FX.st==='rest'||FX.st==='run')return;
   var x=Math.round(FX.x-cam),y=fxY(FX.x);
@@ -1875,7 +1881,7 @@ function drawChute(){
 }
 function coolTap(wx,wy){
   var c=S.cl,i;
-  if(S.staff.tech==='in'&&TC.st!=='gone'&&TC.st!=='rest'&&TC.st!=='run'&&Math.abs(wx-TC.x)<8&&wy>FLOOR-30){
+  if(S.staff.tech==='in'&&TC.st!=='gone'&&TC.st!=='rest'&&TC.st!=='run'&&TC.st!=='back'&&Math.abs(wx-TC.x)<8&&wy>FLOOR-30){
     if(Math.abs(P.x-TC.x)>50){toast('Walk closer to the technician');return;}
     ach('phone');S.techManual=!S.techManual;toast(S.techManual?'Technician: "Ok, I will wait for your orders."':'Technician: "Got it, I will follow AUTO-ROD+."',2200);sfx('lever');save();return;
   }
@@ -2127,7 +2133,7 @@ function tcStep(dt){
     var rn=null;
     if(c.leak)rn='toLeak';else if(c.flood>5){rn='open';}
     else{var od0=techOrder();if(od0){TC.od=od0;rn=od0.k==='pump'?'toPump':'toValve';}}
-    if(rn){TC.st='run';TC.next=rn;TC.t=10;TC.di=0;}
+    if(rn){TC.st='run';TC.next=rn;TC.t=6;TC.di=0;}
   }
   if(TC.oc>0)TC.oc-=dt;
   var st=TC.st;
@@ -2156,12 +2162,12 @@ function tcStep(dt){
       TC.oc=8;TC.od=null;TC.st='toSit';TC.wp=null;TC.t=0;
     }
   }else if(st==='toLeak'){
-    TC.moving=!rwWalk(TC,140,dt,80);TC.step+=dt;
-    if(!TC.moving){TC.st='fix';TC.t=1.4;}
+    TC.moving=!rwWalk(TC,100,dt,80);TC.step+=dt;
+    if(!TC.moving){TC.st='fix';TC.t=1.5;TC.it=Math.random()<.5?1:0;TC.face=1;}
   }else if(st==='fix'){
     TC.t-=dt;
+    if(TC.t<=0.3&&c.leak){c.leak=false;if(ROOM==='cool'){toast('The technician patched the pipe.',2000);sfx('wrench');}}
     if(TC.t<=0){
-      c.leak=false;if(ROOM==='cool'){toast('The technician patched the pipe.',2000);sfx('wrench');}
       TC.st=(c.flood>3)?'open':'toSit';TC.di=0;TC.wp=null;TC.t=0;
     }
   }else if(st==='open'){
@@ -2180,7 +2186,9 @@ function tcStep(dt){
     else{TC.moving=!rwWalk(TC,DRX[TC.di],dt,80);TC.step+=dt;if(!TC.moving){TC.st='tap';TC.t=0.5;TC.after='close';}}
   }else if(st==='toSit'){
     TC.moving=!rwWalk(TC,40,dt,80);TC.step+=dt;
-    if(!TC.moving){TC.st='rest';if(ROOM==='cool')sfx('door');}
+    if(!TC.moving){TC.st='back';TC.t=6;if(ROOM==='cool')sfx('door');}
+  }else if(st==='back'){
+    TC.t-=dt;if(TC.t<=0)TC.st='rest';
   }else if(st==='sit'){
     TC.t-=dt;if(TC.t<=0){TC.st='toSit';TC.wp=null;TC.t=0;}
   }
@@ -2193,13 +2201,24 @@ function ntag(x,y,id){
   ctx.fillStyle='#ffb020';ctx.fillRect(Math.round(x-tw/2),Math.round(y-5),tw,0.5);
   ctx.fillStyle='#f2f5f6';ctx.fillText(w.nm,Math.round(x),Math.round(y-0.5));ctx.restore();
 }
+function tcItem(px,py,it,ang){
+  px=Math.round(px);py=Math.round(py);
+  if(it){R(px-2,py-2,5,5,'#c9a24a');R(px-1,py-1,3,3,'#1b2227');R(px-2,py-2,5,1,'#e6c978');}
+  else{ctx.save();ctx.translate(px,py);ctx.rotate(ang);R(-4,-1,8,2,'#c9d3dd');R(-5,-2,2,4,'#9aa5ad');R(3,-1,1,2,'#fff');ctx.restore();}
+}
 function drawTech(){
   R(86,FLOOR-9,12,2,'#7a5a3a');R(86,FLOOR-9,12,0.5,'#9a7a54');R(88,FLOOR-7,1.5,7,'#4a3320');R(94.5,FLOOR-7,1.5,7,'#4a3320');
-  if(S.staff.tech!=='in'||TC.st==='gone'||TC.st==='rest'||TC.st==='run')return;
+  if(S.staff.tech!=='in'||TC.st==='gone'||TC.st==='rest'||TC.st==='run'||TC.st==='back')return;
   var x=Math.round(TC.x);
   if(TC.st==='sit'){drawChar(x,FLOOR-5,1,PALS.tech,false,false,0,true);ntag(x,FLOOR-30,'tech');}
   else{drawChar(x,FLOOR,TC.face,PALS.tech,TC.moving,false,Math.sin(TC.step*14));ntag(x,FLOOR-27,'tech');}
-  if(TC.st==='fix'||TC.st==='tap'){var sw=Math.floor(S.time*8)%2;R(x+TC.face*6,FLOOR-15-sw,1,6,'#c9d3dd');R(x+TC.face*6,FLOOR-15-sw,1,1,'#fff');}
+  if(TC.st==='tap'){var sw=Math.floor(S.time*8)%2;R(x+TC.face*6,FLOOR-15-sw,1,6,'#c9d3dd');R(x+TC.face*6,FLOOR-15-sw,1,1,'#fff');}
+  if(TC.st==='fix'){
+    var u=Math.max(0,Math.min(1,(1-TC.t)/0.7)),hx=x+6,hy=FLOOR-17;
+    if(u<=0)tcItem(hx,hy-Math.round(Math.max(0,TC.t-1.2)*20),TC.it,0);
+    else if(u<1)tcItem(hx+(141-hx)*u,hy+(64-hy)*u-26*Math.sin(Math.PI*u),TC.it,u*14);
+    if(TC.t<=0.3&&TC.t>0.1){R(137,58,9,9,'#fff3b0');R(140,55,3,15,'#ffd166');R(135,61,13,3,'#ffd166');}
+  }
 }
 
 /* ---------- control rod technicians ---------- */
@@ -2517,7 +2536,7 @@ function drawBrk(){
   R(126,FLOOR-9,72,8,'#7a3640');R(126,FLOOR-9,72,1,'#a05560');R(126,FLOOR-1,72,1,'#3a1218');
   ctx.fillStyle='#9fb0bb';ctx.font='5px "Silkscreen",monospace';ctx.textAlign='center';ctx.fillText('STAFF LOUNGE',162,FLOOR-36);
   var LOUNGE=['tech','jan','medic','rod1','rod2','rod3','ctech1','ctech2','fixer'];
-  STAFF.forEach(function(w){var li=LOUNGE.indexOf(w.id);if((S.staff[w.id]==='out'||(w.id==='tech'&&S.staff.tech==='in'&&(TC.st==='rest'||TC.st==='run'))||(w.id==='fixer'&&S.staff.fixer==='in'&&(FX.st==='rest'||FX.st==='run')))&&li>=0)drawChar(Math.round(131+li*8.7),FLOOR-5,1,PALS[w.id],false,false,0,true);});
+  STAFF.forEach(function(w){var li=LOUNGE.indexOf(w.id);if((S.staff[w.id]==='out'||(w.id==='tech'&&S.staff.tech==='in'&&TC.st==='rest')||(w.id==='fixer'&&S.staff.fixer==='in'&&(FX.st==='rest'||FX.st==='run')))&&li>=0)drawChar(Math.round(131+li*8.7),FLOOR-5,1,PALS[w.id],false,false,0,true);});
   R(126,FLOOR-9,72,0,'#000');
   /* emergency showers */
   for(i=0;i<SHW.length;i++){
@@ -2922,7 +2941,7 @@ function drawWorld(){
   /* doors */
   drawDoor(24,'COOLANT',FLOOR,true);drawDoor(330,'BREAK RM',FLOOR,true);
   drawProps();
-  drawStairs();drawFixer();drawWBBtn();
+  drawStairs();drawFixer();drawTechRun();drawWBBtn();
   if(!S.wbIn)drawWheelbarrow();
   drawChute();
   drawItems();
