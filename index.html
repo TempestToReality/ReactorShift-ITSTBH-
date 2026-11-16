@@ -268,6 +268,15 @@ input[type=text]{font-family:var(--mono);font-size:22px;background:#0a0d10;color
     </div>
   </div>
 
+  <div id="upd" class="overlay" hidden style="position:fixed;z-index:95">
+    <div class="card" style="text-align:center">
+      <h2>Update available</h2>
+      <p id="updTx"></p>
+      <p id="updMsg" style="color:var(--amber);min-height:1em"></p>
+      <div style="display:flex;gap:8px"><button class="btn" id="updYes" type="button">Yes</button><button class="btn" id="updNo" type="button">No</button></div>
+    </div>
+  </div>
+
   <div id="chg" class="overlay" hidden>
     <div class="card hcard">
       <div class="topbar"><h2>Changelog</h2><button class="btn" data-go="cback" type="button">Back</button></div>
@@ -383,7 +392,7 @@ function load(){
   }catch(e){return null;}
 }
 function save(){if(DEAD)return;try{S.drops=ITEMS.map(function(it){return {id:it.id,x:it.st==='ground'?it.x:150,y:it.st==='ground'?it.y:FLOOR};});localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
-var S=load()||newState();if(!S.rack){S.rack=[null,null,null,null,null,null,null,null];var lo=(S.shelf||[]).filter(Boolean);for(var q=0;q<lo.length;q++){if(q<8)S.rack[q]={id:lo[q],n:1};else if(S.wb.length<6)S.wb.push(lo[q]);}}
+var S=load()||newState();if(!S.dock)S.dock=[null,null];if(!S.inbox)S.inbox=[];if(!S.rack){S.rack=[null,null,null,null,null,null,null,null];var lo=(S.shelf||[]).filter(Boolean);for(var q=0;q<lo.length;q++){if(q<8)S.rack[q]={id:lo[q],n:1};else if(S.wb.length<6)S.wb.push(lo[q]);}}
 var stDiv=document.createElement('div');stDiv.id='stor';stDiv.hidden=true;
 stDiv.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;z-index:60';
 stDiv.addEventListener('click',function(e){var b=e.target.closest?e.target.closest('[data-k]'):null;if(e.target===stDiv){closeStor();return;}if(b)storAct(b.dataset.k,+b.dataset.i);});
@@ -827,7 +836,7 @@ var HELP=[
 ['hp','panic','My health is low','health hp low dying hurt medkit bandage heal medic collapsed faint money',
  'Bandage +20 HP, Medkit +60 HP, Caffeine-free GOOD heals fully. <b>Sol R.</b> the Medic heals you whenever you drop under 70 HP. If you collapse, the medics take $100.'],
 ['broke','panic','A control rod broke','control rod broke broken weak cracked failed spare wrench mechanic',
- 'Swap in a spare control rod, or use the <b>wrench</b> to patch it to half strength. Hire Control Rod Mechanics (Altair A., Nova T.) to patch weak rods and replace broken ones for $120 each.'],
+ 'Swap in a spare control rod, or use the <b>wrench</b> to patch it to half strength. Hire Control Rod Mechanics (Nova T., Altair A.) to patch weak rods and replace broken ones for $120 each.'],
 ['stuck','panic','I am stuck','stuck cant move trapped crate jump unstuck glitch softlock',
  'Hit <b>Jump</b> (or W/Space). If that fails: Pause menu, then <b>Unstuck</b>. It puts you back at the start.'],
 ['crew','crew','Crew: who does what','crew staff workers employees hire clock in evan dina sol tomas wren jaeron altair nova hal coolant janitor medic upgrader mechanic handyman',
@@ -898,8 +907,9 @@ $('help').addEventListener('click',function(e){
 });
 
 var CHG=[
-['Nov 15',['New Help page with search, tags and panic buttons. Find it in the menu and Settings.','Contracts now live only on the clipboard in the control room.','Evan runs through the reactor room and throws a wrench or tape roll at burst pipes.','The old cheat menu is merged into the debug menu.','Smaller, faster code.']],
-['Nov 14',['Storage room behind the stairs with a cart bay and buyable fuel shelves.','Disposal is now a sealed dark room. A watertight door shuts when the coolant room floods.','Shops moved to wall touchscreens. No more belts.','Crew have nametags and portraits.','New pause menu. Desktop and sideways phone play, with keyboard controls.','Windows version.']],
+['Truck Day Update (build 78)',['Orders arrive by truck. Boxes are thrown onto pallets and you tap a pallet to take the items. Before the storage door is fixed the dock is up on the platform, after that it moves to the ground.','Fuel rods come in lead-lined boxes with a radiation symbol. A DOCK sign marks the spot.','Cart slot marked on the floor right of the storage door.','The crew nap on the lounge couch and have nametags. Evan jumps up when a pipe bursts.','Evan sits on his stool in the coolant room while following AUTO-ROD+.','Altair and Nova swapped places as Control Rod Mechanics.','Update notice on the title menu. Removed the fan by the control door.']],
+['Help Update',['New Help page with search, tags and panic buttons. Find it in the menu and Settings.','Contracts now live only on the clipboard in the control room.','Evan runs through the reactor room and throws a wrench or tape roll at burst pipes.','The old cheat menu is merged into the debug menu.','Smaller, faster code.']],
+['Storage Update',['Storage room behind the stairs with a cart bay and buyable fuel shelves.','Disposal is now a sealed dark room. A watertight door shuts when the coolant room floods.','Shops moved to wall touchscreens. No more belts.','Crew have nametags and portraits.','New pause menu. Desktop and sideways phone play, with keyboard controls.']],
 ['Earlier',['Contracts and daily goals.','Wardrobe, achievements, difficulty and hardcore mode.','Backup saves.','The Handyman and the broken storage door.','AUTO-ROD rework, music, main menu and tutorial.']]
 ];
 var CFROM='menu';
@@ -909,6 +919,37 @@ function openChg(from){
 }
 function cBack(){if(CFROM==='mm')$('chg').hidden=true;else openOv('menu');}
 
+/* ---------- update notice: reads version.json from the repo ---------- */
+var BUILD=78,UPD_URL='https://raw.githubusercontent.com/TempestToReality/ReactorShift-ITSTBH-/main/version.json',UPD=null,updNo=0;
+function updShow(){
+  $('updTx').innerHTML='A new version has been released, titled "'+String(UPD.title||'New update').replace(/</g,'&lt;')+'".<br>Update?';
+  $('updMsg').textContent=updNo?'No, update the game now. Old versions can have bugs.':'';
+  $('updYes').disabled=false;$('upd').hidden=false;
+}
+function updCheck(){
+  var mmv=$('mm');if(UPD){if(mmv&&!mmv.hidden&&$('upd').hidden)updShow();return;}
+  if(!window.fetch||(location.protocol!=='file:'&&location.protocol.indexOf('http')!==0&&location.protocol!=='capacitor:'))return;
+  var ac=window.AbortController?new AbortController():null,tm=setTimeout(function(){if(ac)ac.abort();},8000);
+  fetch(UPD_URL+'?t='+Date.now(),{cache:'no-store',signal:ac?ac.signal:undefined}).then(function(r){return r.json();}).then(function(j){
+    clearTimeout(tm);if(j&&j.version>BUILD){UPD=j;}
+  }).catch(function(){clearTimeout(tm);});
+}
+function updGo(){
+  $('updYes').disabled=true;$('updTx').textContent='Closing the game and updating...';
+  var web=location.protocol.indexOf('http')===0&&location.hostname!=='localhost';
+  if(web){
+    var done=function(){location.replace(location.pathname+'?v='+Date.now());};
+    Promise.all([window.caches?caches.keys().then(function(k){return Promise.all(k.map(function(x){return caches.delete(x);}));}):0,
+      navigator.serviceWorker?navigator.serviceWorker.getRegistrations().then(function(r){return Promise.all(r.map(function(x){return x.unregister();}));}):0]).then(done,done);
+  }else{
+    window.open(UPD.url||'https://github.com/TempestToReality/ReactorShift-ITSTBH-/releases/latest','_blank');
+    $('updTx').textContent='Download the new build, install it, then relaunch the game.';
+    $('updYes').disabled=false;
+  }
+}
+$('updYes').addEventListener('click',updGo);
+$('updNo').addEventListener('click',function(){updNo++;if(updNo>=2){UPD.version=0;UPD=null;updNo=0;$('upd').hidden=true;try{sessionStorage.setItem('isthis-updskip','1');}catch(e){}}else updShow();});
+setTimeout(updCheck,4000);setInterval(function(){var sk=0;try{sk=sessionStorage.getItem('isthis-updskip');}catch(e){}if(!sk)updCheck();},20000);
 var OVS=['menu','con','xfer','ward','achv','settings','help','chg','numpad','adminLogin','dbug','gameover'];
 function openOv(id){OVS.forEach(function(o){$(o).hidden=(o!==id);});$('shop').hidden=true;paused=true;HOLD=0;P.tx=null;}
 function closeOv(){OVS.forEach(function(o){$(o).hidden=true;});paused=false;}
@@ -1362,6 +1403,7 @@ function storAct(k,i){
   }
   if(moved){sfx('pickup');save();renderInv();renderStor();}
 }
+var SLOTX=508;
 function wbMove(dt){
   if(S.wbIn)return;
   var tx=null,sp=130;
@@ -1374,6 +1416,7 @@ function wbMove(dt){
     var d=tx-WBX;
     if(Math.abs(d)<1.5){if(WBCALL)WBCALL=false;}else WBX+=Math.max(-sp*dt,Math.min(sp*dt,d));
   }
+  else if(!WBD&&!WBCALL&&WBX!==SLOTX&&Math.abs(WBX-SLOTX)<14)WBX+=Math.max(-60*dt,Math.min(60*dt,SLOTX-WBX));
   S.wbx=WBX;
   if(P.y>=FLOOR-2&&P.x>STX-20&&(WBD||P.x>STX+70))PASS=true;
   if(PASS&&P.x<STX-24)PASS=false;
@@ -1538,8 +1581,8 @@ var STAFF=[
   {id:'rod1',nm:'Tomas B.',name:'Rod Upgrader I',price:2500,desc:'Pulls every rod below Refined, bins them, charges up, then fires them back one tier better.'},
   {id:'rod2',nm:'Wren P.',name:'Rod Upgrader II',price:6000,desc:'Same routine, upgrades rods up to Elite.'},
   {id:'rod3',nm:'Jaeron G.',name:'Rod Upgrader III',price:12000,desc:'Same routine, upgrades rods all the way to Apex.'},
-  {id:'ctech1',nm:'Altair A.',name:'Control Rod Mechanic I',price:3500,desc:'Patches weak control rods and replaces broken ones ($120 each).'},
-  {id:'ctech2',nm:'Nova T.',name:'Control Rod Mechanic II',price:7000,desc:'Same job, but walks and works much faster.'},
+  {id:'ctech1',nm:'Nova T.',name:'Control Rod Mechanic I',price:3500,desc:'Patches weak control rods and replaces broken ones ($120 each).'},
+  {id:'ctech2',nm:'Altair A.',name:'Control Rod Mechanic II',price:7000,desc:'Same job, but walks and works much faster.'},
   {id:'fixer',nm:'Hal D.',name:'Handyman',price:1500,desc:'Clears the debris, repairs the broken storage door under the stairs, then builds the shelf inside. Then he just hangs out.'}
 ];
 var DRINKS=[{id:'good',price:100},{id:'goodcf',price:60},{id:'knock',price:40}];
@@ -1630,6 +1673,98 @@ function shopBack(box,title,fn){
   hd.innerHTML='<span class="lab">'+title+'</span>';
   hd.appendChild(mkBtn('Back',fn));box.appendChild(hd);
 }
+
+/* ---------- dock deliveries (storage repaired): truck throws boxes onto pallets ---------- */
+function dx(i){return(S.reno<2?[462,484]:[548,570])[i];}
+function dfy(){return S.reno<2?PY:FLOOR;}
+var DK={st:'idle',t:0,n:0,slot:0},DKB=[];
+function trefoil(cx,cy,r){
+  ctx.fillStyle='#ffd23a';ctx.beginPath();ctx.arc(cx,cy,r,0,6.2832);ctx.fill();
+  ctx.fillStyle='#15191c';
+  for(var a=0;a<3;a++){ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r*0.9,a*2.0944-0.52,a*2.0944+0.52);ctx.fill();}
+  ctx.fillStyle='#ffd23a';ctx.beginPath();ctx.arc(cx,cy,r*0.28,0,6.2832);ctx.fill();
+}
+function dBox(x,y,id){
+  x=Math.round(x);y=Math.round(y);
+  if(id==='fuel'){R(x,y,9,7,'#4b5258');R(x,y,9,1,'#7d878e');R(x,y+6,9,1,'#2a3034');R(x,y,1,7,'#68737a');trefoil(x+4.5,y+3.5,2.6);}
+  else{R(x,y,9,7,'#b88a4a');R(x,y,9,1,'#d6a964');R(x,y+6,9,1,'#8a6530');R(x+4,y,1,7,'#e6d3a0');}
+}
+function dkStep(dt){
+  var i;
+  if(DK.st==='idle'){
+    if(!S.inbox.length)return;
+    for(i=0;i<2;i++)if(!S.dock[i])break;
+    if(i>=2)return;
+    DK.t+=dt;if(DK.t<3)return;
+    DK.slot=i;DK.st='in';DK.t=0;DK.n=Math.min(12,S.inbox[0].length);DKB=[];
+    if(ROOM==='main'){sfx('door');toast('A delivery truck is backing in at the dock.',2000);}
+  }else if(DK.st==='in'){
+    DK.t+=dt;if(DK.t>=2.2){DK.st='throw';DK.t=0;}
+  }else if(DK.st==='throw'){
+    var pt=DK.t;DK.t+=dt;
+    var k=Math.floor(DK.t/0.28),q=Math.floor(pt/0.28);
+    if(k>q&&k<=DK.n&&ROOM==='main')sfx('pickup');
+    if(DK.t>=DK.n*0.28+0.6){DK.st='out';DK.t=0;}
+  }else if(DK.st==='out'){
+    DK.t+=dt;
+    if(DK.t>=2){
+      S.dock[DK.slot]={ids:S.inbox.shift()};DK.st='idle';DK.t=0;save();
+      if(ROOM==='main'){sfx('coin');toast('Delivery ready at the dock. Tap the pallet to take it.',2400);}
+    }
+  }
+}
+function drawDock(){
+  var i,k,j,x,pl,ids,fy=dfy(),tt;
+  /* wall sign + floor markings */
+  var sx=dx(0)-cam;
+  R(sx,fy-76,44,12,'#8a6a10');R(sx,fy-76,44,1,'#d9a520');R(sx+1,fy-75,42,10,'#b8860b');
+  ctx.fillStyle='#15191c';ctx.font='5px "Silkscreen",monospace';ctx.textAlign='center';ctx.fillText('DOCK',sx+28,fy-67);
+  trefoil(sx+8,fy-70,4);
+  for(k=0;k<46;k+=6)R(sx-1+k,fy,3,2,'#ffb020');
+  /* truck */
+  var tk=DK.st==='in'?1-DK.t/2.2:(DK.st==='out'?DK.t/2:(DK.st==='throw'?0:1)),rx=592+Math.round(Math.pow(Math.max(0,tk),2)*90)-cam;
+  if(DK.st!=='idle'){
+    R(rx,FLOOR-38,50,32,'#d4dade');R(rx,FLOOR-38,50,2,'#f1f4f6');R(rx,FLOOR-8,50,2,'#8d979e');
+    R(rx,FLOOR-36,4,28,'#0b1013');R(rx+4,FLOOR-36,1,28,'#3a444a');
+    R(rx+20,FLOOR-30,24,10,'#2e8b4e');R(rx+22,FLOOR-27,20,0.5,'#58c27c');
+    for(k=0;k<2;k++){var wx=rx+10+k*30;ctx.fillStyle='#15181b';ctx.beginPath();ctx.arc(wx,FLOOR-3,4,0,6.2832);ctx.fill();R(Math.round(wx)-1,FLOOR-4,2,2,'#9aa3aa');}
+    /* thrown boxes */
+    if(DK.st==='throw'||DK.st==='out'){
+      ids=S.inbox[0]||[];tt=DK.st==='out'?99:DK.t;
+      for(j=0;j<DK.n;j++){
+        var u=(tt-j*0.28)/0.55;if(u<0)continue;
+        var tx=dx(DK.slot)+1+(j%2)*9,ty=fy-3-7*(Math.floor(j/2)+1);
+        if(u>=1){dBox(tx-cam,ty,ids[j]);continue;}
+        dBox(rx+2+(tx-cam-rx-2)*u,FLOOR-26+(ty-FLOOR+26)*u-(16+(FLOOR-fy)*0.4)*Math.sin(Math.PI*u),ids[j]);
+      }
+    }
+  }
+  /* pallets */
+  for(i=0;i<2;i++){
+    pl=S.dock[i];if(!pl)continue;
+    x=dx(i)-cam;
+    R(x-1,fy-3,20,3,'#8a6a3a');R(x-1,fy-3,20,1,'#a98a5a');R(x+3,fy-2,2,2,'#4a3320');R(x+12,fy-2,2,2,'#4a3320');
+    for(j=0;j<Math.min(12,pl.ids.length);j++)dBox(x+(j%2)*9,fy-3-7*(Math.floor(j/2)+1),pl.ids[j]);
+    ctx.fillStyle='#ffb020';ctx.font='4px "Silkscreen",monospace';ctx.textAlign='center';ctx.fillText('TAKE'+(pl.ids.length>12?' +'+(pl.ids.length-12):''),x+9,fy-6-7*Math.ceil(Math.min(12,pl.ids.length)/2));
+  }
+}
+function dockTap(wx,wy){
+  var fy=dfy();
+  for(var i=0;i<2;i++){
+    var pl=S.dock[i];
+    if(!pl||wx<dx(i)-2||wx>dx(i)+20||wy<fy-60||wy>fy+2)continue;
+    if(Math.abs(P.x-dx(i))>70){toast('Walk closer to the pallet');return true;}
+    var n=0;
+    while(pl.ids.length){
+      var id=pl.ids[0],ok=isTool(id)?addTool(id):addItem(id);
+      if(!ok)break;pl.ids.shift();n++;
+    }
+    if(!pl.ids.length)S.dock[i]=null;
+    if(n){sfx('pickup');toast(pl.ids.length?'Took '+n+'. Bag full, the rest stays on the pallet.':'Took everything from the pallet.',2000);}
+    save();return true;
+  }
+  return false;
+}
 function maxQty(id){return (isTool(id)||id==='plush')?1:9;}
 function dispenseOrder(items){
   var flat=[],tot=0,i;
@@ -1637,6 +1772,7 @@ function dispenseOrder(items){
   if(!flat.length)return false;
   if(S.cash<tot){toast('Not enough cash');sfx('hurt');say('broke');return false;}
   for(i=0;i<items.length;i++){if(isTool(items[i].id)&&owned(items[i].id)){toast('You already have a '+NAMES[items[i].id].toLowerCase());sfx('hurt');return false;}}
+  {S.cash-=tot;S.inbox.push(flat);sfx('coin');toast('Order placed. The truck will drop it at the dock.',2800);save();return true;}
   var got=0,spent=0;
   items.forEach(function(it){for(var k=0;k<it.q;k++){var ok=isTool(it.id)?addTool(it.id):addItem(it.id);if(ok){got++;spent+=it.p;}}});
   if(!got){toast('Bag full. Free a slot first.');sfx('hurt');return false;}
@@ -1803,7 +1939,10 @@ function drawFixer(){
   if(FX.st==='work'){var sw=Math.floor(S.time*6)%2;R(x+FX.face*6,y-14-sw*2,2,1,'#9aa5ad');R(x+FX.face*6,y-13-sw*2,1,4,'#7a5a3a');}
 }
 function drawStairs(){
-  var i,b,k,px0=STX+72;
+  var i,b,k,px0=STX+72,sx=SLOTX-cam;
+  R(sx-2,FLOOR-1,WBW+4,1,'#ffb020');for(k=0;k<WBW+4;k+=6)R(sx-2+k,FLOOR,3,2,'#ffb020');
+  R(sx-2,FLOOR-34,1,34,'rgba(255,176,32,.25)');R(sx+WBW+1,FLOOR-34,1,34,'rgba(255,176,32,.25)');
+  ctx.fillStyle='#ffb020';ctx.font='5px "Silkscreen",monospace';ctx.textAlign='center';ctx.fillText('CART SLOT',sx+WBW/2,FLOOR-36);
   R(px0-cam,PY+8,WORLD-px0,FLOOR-PY-8,'#0f1d1b');
   for(i=0;i<blocks.length;i++){
     b=blocks[i];
@@ -1872,6 +2011,7 @@ function handleTap(wx,wy){
   }
   if(wx>=WBBX-8&&wx<=WBBX+8&&wy>=FLOOR-36&&wy<=FLOOR-16){if(S.wbIn){S.wbIn=false;S.wbTake=false;WBX=SDX-WBW-8;}WBD=false;WBCALL=true;toast('Wheelbarrow on its way',1400);beep(420,.05);return;}
   if(wx>=DSP_X-4&&wx<=DSP_X+18&&wy>FLOOR-14){toast('Rod upgraders drop spent rods down the chute. The disposal bin is past the coolant room.',2600);return;}
+  if(dockTap(wx,wy))return;
   var pr=propAt(wx,wy);
   if(pr){
     if(false){    }else notReady(pr.name,pr.step);
@@ -2298,6 +2438,7 @@ function az5Tap(){
 
 /* ---------- coolant technician ---------- */
 var TC={x:60,st:'gone',t:0,face:1,step:0,moving:false,wp:null,pt:25,di:0,after:'open',hold:0,oc:0,od:null,next:'toLeak'},DRX=[70,110,150];
+function TCAUTO(){return S.arod&&S.disks.autor2&&!S.techManual;}
 function tcStep(dt){
   var c=S.cl;
   if(S.staff.tech!=='in'){TC.st='gone';return;}
@@ -2307,7 +2448,7 @@ function tcStep(dt){
   if(TC.st==='rest'){
     var rn=null;
     if(c.leak)rn='toLeak';else if(c.flood>5){rn='open';}
-    else{var od0=techOrder();if(od0){TC.od=od0;rn=od0.k==='pump'?'toPump':'toValve';}}
+    else{var od0=techOrder();if(od0){TC.od=od0;rn=od0.k==='pump'?'toPump':'toValve';}else if(TCAUTO())rn='toSit';}
     if(rn){TC.st='run';TC.next=rn;TC.t=6;TC.di=0;}
   }
   if(TC.oc>0)TC.oc-=dt;
@@ -2360,16 +2501,20 @@ function tcStep(dt){
     if(TC.di>=3)TC.st='toSit';
     else{TC.moving=!rwWalk(TC,DRX[TC.di],dt,80);TC.step+=dt;if(!TC.moving){TC.st='tap';TC.t=0.5;TC.after='close';}}
   }else if(st==='toSit'){
-    TC.moving=!rwWalk(TC,40,dt,80);TC.step+=dt;
-    if(!TC.moving){TC.st='back';TC.t=6;if(ROOM==='cool')sfx('door');}
+    var au=TCAUTO();
+    TC.moving=!rwWalk(TC,au?92:40,dt,80);TC.step+=dt;
+    if(!TC.moving){if(au){TC.st='sit';TC.face=1;}else{TC.st='back';TC.t=6;if(ROOM==='cool')sfx('door');}}
   }else if(st==='back'){
     TC.t-=dt;if(TC.t<=0)TC.st='rest';
   }else if(st==='sit'){
-    TC.t-=dt;if(TC.t<=0){TC.st='toSit';TC.wp=null;TC.t=0;}
+    if(c.flood>5){TC.st='open';TC.di=0;return;}
+    var od1=techOrder();
+    if(od1){TC.od=od1;TC.st=od1.k==='pump'?'toPump':'toValve';}
+    else if(!TCAUTO()){TC.st='toSit';TC.wp=null;}
   }
 }
-function ntag(x,y,id){
-  var w=null,i;for(i=0;i<STAFF.length;i++)if(STAFF[i].id===id){w=STAFF[i];y-=(i%2)*6;break;}
+function ntag(x,y,id,ns){
+  var w=null,i;for(i=0;i<STAFF.length;i++)if(STAFF[i].id===id){w=STAFF[i];if(!ns)y-=(i%2)*6;break;}
   if(!w)return;ctx.save();ctx.font='4px "Silkscreen",monospace';ctx.textAlign='center';
   var tw=Math.ceil(ctx.measureText(w.nm).width)+3;
   ctx.fillStyle='rgba(10,14,16,.78)';ctx.fillRect(Math.round(x-tw/2),Math.round(y-5),tw,6);
@@ -2451,8 +2596,8 @@ var PALS={
   rod1:{jk:'#b4452c',jkL:'#d0603f',jkD:'#8a3220',shirt:'#e8d9c8',stripe:'#ffb020',stripeL:'#ffd468',pant:'#2b3a55',skin:'#f0c9a0',skinD:'#d9a97c',hair:'#6b3a22',hairL:'#8a5030',hat:'#ffb020'},
   rod2:{jk:'#8a3fb0',jkL:'#a85ed0',jkD:'#682e88',shirt:'#e8dff2',stripe:'#ffd54a',stripeL:'#fff0a0',pant:'#2a2a40',skin:'#e0b088',skinD:'#bf8f68',hair:'#1c1c28',hairL:'#34344a',hat:'#d9c04a'},
   fixer:{jk:'#d9a21a',jkL:'#f2c23a',jkD:'#a87a10',shirt:'#e8dcc0',stripe:'#e6e9ec',stripeL:'#fff',pant:'#4a3a2a',skin:'#e0b088',skinD:'#bf8f68',hair:'#3a2418',hairL:'#55361f',hat:'#ff8a1a'},
-  ctech1:{jk:'#5a6a74',jkL:'#788a96',jkD:'#3f4c54',shirt:'#e6e9ec',stripe:'#4fc3f7',stripeL:'#9fe0ff',pant:'#2b3340',skin:'#f0c9a0',skinD:'#d9a97c',hair:'#8a5a2a',hairL:'#a87440',hat:'#e6e9ec'},
-  ctech2:{jk:'#566b3a',jkL:'#728a50',jkD:'#3f5028',shirt:'#e8efd8',stripe:'#4fc3f7',stripeL:'#9fe0ff',pant:'#2a3322',skin:'#d0a07a',skinD:'#b08460',hair:'#2a1c10',hairL:'#44301c',hat:'#3a8fd0'},
+  ctech1:{jk:'#566b3a',jkL:'#728a50',jkD:'#3f5028',shirt:'#e8efd8',stripe:'#4fc3f7',stripeL:'#9fe0ff',pant:'#2a3322',skin:'#d0a07a',skinD:'#b08460',hair:'#2a1c10',hairL:'#44301c',hat:'#3a8fd0'},
+  ctech2:{jk:'#5a6a74',jkL:'#788a96',jkD:'#3f4c54',shirt:'#e6e9ec',stripe:'#4fc3f7',stripeL:'#9fe0ff',pant:'#2b3340',skin:'#f0c9a0',skinD:'#d9a97c',hair:'#8a5a2a',hairL:'#a87440',hat:'#e6e9ec'},
   rod3:{jk:'#1f6f8a',jkL:'#3a90ac',jkD:'#14536a',shirt:'#dff0f6',stripe:'#ffd54a',stripeL:'#fff0a0',pant:'#222c3a',skin:'#b8805a',skinD:'#966244',hair:'#14100c',hairL:'#2a221a',hat:'#d26bff'}
 };
 var RWCAP={rod1:2,rod2:3,rod3:4};
@@ -2711,7 +2856,8 @@ function drawBrk(){
   R(126,FLOOR-9,72,8,'#7a3640');R(126,FLOOR-9,72,1,'#a05560');R(126,FLOOR-1,72,1,'#3a1218');
   ctx.fillStyle='#9fb0bb';ctx.font='5px "Silkscreen",monospace';ctx.textAlign='center';ctx.fillText('STAFF LOUNGE',162,FLOOR-36);
   var LOUNGE=['tech','jan','medic','rod1','rod2','rod3','ctech1','ctech2','fixer'];
-  STAFF.forEach(function(w){var li=LOUNGE.indexOf(w.id);if((S.staff[w.id]==='out'||(w.id==='tech'&&S.staff.tech==='in'&&TC.st==='rest')||(w.id==='fixer'&&S.staff.fixer==='in'&&(FX.st==='rest'||FX.st==='run')))&&li>=0)drawChar(Math.round(131+li*8.7),FLOOR-5,1,PALS[w.id],false,false,0,true);});
+  STAFF.forEach(function(w){var li=LOUNGE.indexOf(w.id);if((S.staff[w.id]==='out'||(w.id==='tech'&&S.staff.tech==='in'&&TC.st==='rest')||(w.id==='fixer'&&S.staff.fixer==='in'&&(FX.st==='rest'||FX.st==='run')))&&li>=0){var lx=Math.round(131+li*8.7);drawChar(lx,FLOOR-5,1,PALS[w.id],false,false,0,true);ntag(lx,FLOOR-30-(li%3)*6,w.id,1);var zp=(t*0.7+li*0.37)%1;ctx.fillStyle='rgba(200,225,255,'+(1-zp).toFixed(2)+')';ctx.font='4px "Silkscreen",monospace';ctx.textAlign='center';ctx.fillText('Z',lx+4+zp*3,FLOOR-31-zp*10-(li%3)*6);}});
+  if(S.staff.tech==='in'&&TC.st==='run'&&TC.next==='toLeak'&&TC.t>4.7){var sj=(6-TC.t)/1.3,jx=Math.round(131);drawChar(jx,FLOOR-Math.round(Math.sin(sj*3.14)*12),1,PALS.tech,false,false,0);ntag(jx,FLOOR-30-Math.round(Math.sin(sj*3.14)*12),'tech');ctx.fillStyle='#ff4d3d';ctx.font='8px "Silkscreen",monospace';ctx.fillText('!',jx,FLOOR-46-Math.round(Math.sin(sj*3.14)*12));}
   R(126,FLOOR-9,72,0,'#000');
   /* emergency showers */
   for(i=0;i<SHW.length;i++){
@@ -2824,6 +2970,7 @@ function step(dt){
   /* player */
   if(ROOM==='main'&&S.reno<2&&P.y>=FLOOR-2&&P.x>SDX-8){P.x=SDX-8;P.vy=0;}
   if(ROOM==='main')wbMove(dt);
+  dkStep(dt);
   if(storOpen&&(ROOM!=='stor'||P.x<90))closeStor();
   P.walk=false;
   if(HOLD!==0)P.tx=P.x+HOLD*30;
@@ -3050,7 +3197,7 @@ function drawWorld(){
   /* wall vents + smoke */
   var heatV=Math.max(0,Math.min(1,S.T/MELT));
   ventAng+=FDT*(1.5+heatV*20);
-  [[130,38],[372,38],[540,60]].forEach(function(v,vi){
+  [[130,38],[372,38]].forEach(function(v,vi){
     var vx=v[0]-cam-9,vy=v[1];
     R(vx-1,vy-1,20,20,'#2a3836');R(vx,vy,18,18,'#0a1211');
     ctx.save();ctx.translate(vx+9,vy+9);ctx.rotate(ventAng+vi);
@@ -3116,7 +3263,7 @@ function drawWorld(){
   /* doors */
   drawDoor(24,'COOLANT',FLOOR,true);drawDoor(330,'BREAK RM',FLOOR,true);
   drawProps();
-  drawStairs();drawFixer();drawTechRun();drawWBBtn();
+  drawStairs();drawDock();drawFixer();drawTechRun();drawWBBtn();
   if(!S.wbIn)drawWheelbarrow();
   drawChute();
   drawItems();
