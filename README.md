@@ -1,56 +1,85 @@
 # Is this supposed to be here?
 
-A 2D pixel-art nuclear reactor simulator for Android. Run the core, manage rods and coolant, hire a crew, take contracts, and try not to melt down. The tutorial is built into the game.
+A 2D pixel-art nuclear reactor simulator. Run the core, manage rods and coolant, hire a crew, take contracts, order supplies by truck, and try not to melt down. Plays on Android, Windows and in a browser. The in-game Help page (Menu > Help, with search and tags) explains every mechanic.
 
-Made by Angelo (TempestToReality). Inspired by Meltdown Crew. Devlogs and updates: https://discord.gg/gcqKTUpdKn
+Made by Angelo (TempestToReality). Inspired by Meltdown Crew.
+This is the final version of this game. A new game is in the works; follow the Discord for news.
+Devlogs, updates and feedback: https://discord.gg/gcqKTUpdKn
 
-## Download (Android)
+## Download
 
 **[Get the latest version here](../../releases/latest)**
 
-1. Open that link and scroll to **Assets**.
-2. Tap **ReactorShift.apk** to download it.
-3. Open the downloaded file. If your phone asks, allow installing from this source, then tap **Install**.
+Scroll to **Assets** on that page and pick your version:
 
-Updating later: download the newest `ReactorShift.apk` the same way and install it over the old one. Your saves are kept.
+| Platform | File | How to install |
+| --- | --- | --- |
+| Android | `ReactorShift.apk` | Open the file on your phone, allow installing from this source if asked, tap **Install**. |
+| Windows | `ReactorShift.exe` | Double-click it. Windows may show a SmartScreen warning: click **More info**, then **Run anyway**. |
 
-Before an update, you can back up your saves in the game: Pause menu > Backup saves > Export.
+You don't need a GitHub account to download. Saves stay on your device.
 
-You don't need a GitHub account to download.
+## Updating
 
-## About the install warning (Google Play Protect)
+When a new version is released, the game shows a message on the title menu: *"A new version has been released, titled "..." Update?"*
 
-When you install the APK you may see a warning such as "App not scanned" or "Blocked by Play Protect". This is expected and is not a sign that anything is wrong:
+- **Yes**: in the web version the game reloads with the new version. In the Android and Windows apps it opens the Releases page. Download the new file and install it over the old one. Your saves are kept.
+- **No**: the game asks once more, then leaves you alone until you next launch it.
 
-- The APK is a **debug build installed outside the Google Play Store**. Android shows a warning for every app that doesn't come from the Play Store or isn't signed with a registered developer key.
-- It is not yet published on Google Play. A Play release needs a signed build and a developer account.
-- To continue, tap **More details** then **Install anyway**.
+Before updating, you can back up your saves in the game: Pause menu > Backup saves > Export.
 
-You can check for yourself what the app does:
+The full history of changes is in the game: Menu > Changelog.
+
+## About the install warnings
+
+Android may say "App not scanned" or "Blocked by Play Protect", and Windows may show a SmartScreen warning. This is expected and does not mean anything is wrong.
+
+- The apps are **unsigned builds distributed outside the Play Store and the Microsoft Store**. Both systems warn about every app that isn't signed with a paid certificate.
+- On Android tap **More details** then **Install anyway**.
+- On Windows click **More info** then **Run anyway**.
+
+You can check what the game does for yourself:
 
 - **The whole game is one readable file:** `index.html`. There is no hidden or compiled game code.
-- **The APK is built in public** by GitHub Actions from the files in this repository (see `.github/workflows/android.yml`). You can read every build step and the log of each run.
-- **No accounts, no ads, no tracking, no analytics.** The game has no login and sends no data anywhere.
+- **Both apps are built in public** by GitHub Actions from the files in this repository (see `.github/workflows/`). You can read every build step.
+- **No accounts, no ads, no tracking, no analytics.** The game sends no personal data anywhere.
 - **Saves stay on your device**, in the app's own storage.
-- **Network use is minimal.** The game works offline. The only internet requests are loading a pixel font from Google Fonts (it falls back to a default font if offline) and opening the Discord link when you tap it. The Android wrapper (Capacitor) includes the standard Internet permission for this reason.
+- **Network use is minimal.** The game works offline. It makes two kinds of requests: it loads a pixel font from Google Fonts (with a default font as fallback), and it reads `version.json` from this repository to check for updates.
 - **No access to your files, contacts, camera, microphone or location.**
 
-If you are unsure, don't install it. Read the source here first, or build the APK yourself from this repository.
+If you are unsure, don't install it. Read the source here first, or build it yourself from this repository.
 
-## For developers: how the repository is organised
-
-You only need this section if you want to look at or build the project.
+## For developers
 
 | File | What it is |
 | --- | --- |
 | `index.html` | The entire game |
+| `version.json` | Tells installed games whether a newer version exists |
 | `manifest.webmanifest`, `sw.js` | Web-app install and offline files |
 | `capacitor.config.json`, `package.json` | Settings for the Android wrapper (Capacitor) |
 | `icon-*.png` | App icons |
-| `debug.keystore` | Fixed debug signing key so new builds install over old ones |
+| `debug.keystore` | Fixed debug signing key so new Android builds install over old ones |
 | `.github/workflows/android.yml` | Builds the APK and publishes it under Releases |
+| `.github/workflows/windows.yml` | Builds the Windows exe (Electron) and publishes it under Releases |
 
-Every time `index.html` changes, GitHub builds a new APK and adds it to **Releases**.
+Every time `index.html` changes, GitHub builds a new APK and exe and adds them to **Releases**.
+
+### Announcing an update to players
+
+1. Edit `version.json` on the `main` branch.
+2. Set `title` to the update's name, for example `"Truck Day Update"`.
+3. Set `version` to a number higher than the build number inside the game (the `BUILD` value in `index.html`).
+4. Commit. Players are prompted the next time they open the title menu.
+
+```json
+{
+  "version": 79,
+  "title": "Your Update Name",
+  "url": "https://github.com/TempestToReality/ReactorShift-ITSTBH-/releases/latest"
+}
+```
+
+`url` is where the Android and Windows apps send players to download the new build.
 
 ## Status
 
