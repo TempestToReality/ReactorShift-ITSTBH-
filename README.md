@@ -64,23 +64,6 @@ If you are unsure, don't install it. Read the source here first, or build it you
 
 Every time `index.html` changes, GitHub builds a new APK and exe and adds them to **Releases**.
 
-### Announcing an update to players
-
-1. Edit `version.json` on the `main` branch.
-2. Set `title` to the update's name, for example `"Truck Day Update"`.
-3. Set `version` to a number higher than the build number inside the game (the `BUILD` value in `index.html`).
-4. Commit. Players are prompted the next time they open the title menu.
-
-```json
-{
-  "version": 79,
-  "title": "Your Update Name",
-  "url": "https://github.com/TempestToReality/ReactorShift-ITSTBH-/releases/latest"
-}
-```
-
-`url` is where the Android and Windows apps send players to download the new build.
-
 ## Status
 
 In development. Bugs and feedback are welcome on the Discord.
